@@ -18,7 +18,8 @@ app.get('/listTransactions', function (req, res) {
       res.end(JSON.stringify(transactions));
 })
 
-app.post('/addUser', function (req, res) {
+
+app.post('/addTransaction', function (req, res) {
    // First read existing users.
     let transactions = JSON.parse(fs.readFileSync(pathToFile));
     transactions.push(req.body);
@@ -30,6 +31,25 @@ app.post('/addUser', function (req, res) {
 
     res.end(JSON.stringify(transactions)); 
 })
+
+app.delete('/deleteTransaction', (req, res) => {
+   let transactions = JSON.parse(fs.readFileSync(pathToFile));
+   let newTransactions = []
+   const { id } = req.body;
+   transactions.filter((transaction) => {
+      if (transaction.id !== id) {
+         newTransactions.push(transaction)
+     }
+   })
+
+   fs.writeFileSync(pathToFile, JSON.stringify(newTransactions, null, 2), (err) => {
+      if (err) throw err;
+      console.log('Data written to file');
+      });
+
+   res.end(JSON.stringify(newTransactions));
+ });
+
 
 var server = app.listen(3001, function () {
    var host = server.address().address

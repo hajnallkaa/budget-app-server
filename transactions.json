@@ -1,44 +1,23 @@
 [
   {
-    "name": "1",
-    "password": "password1",
-    "profession": "whore",
-    "id": 1
+    "id": 1,
+    "type": "Income",
+    "category": "Salary",
+    "amount": "499",
+    "date": "2021.10.01."
   },
   {
-    "name": "2",
-    "password": "password2",
-    "profession": "whore",
-    "id": 2
+    "id": 3,
+    "type": "Expense",
+    "category": "Business",
+    "amount": "4",
+    "date": "2021-10-21"
   },
   {
-    "name": "3",
-    "password": "password3",
-    "profession": "whore",
-    "id": 3
-  },
-  {
-    "name": "klio",
-    "password": "password5",
-    "profession": "whore",
-    "id": 5
-  },
-  {
-    "name": "Cirmos",
-    "password": "password6",
-    "profession": "ftontend developer",
-    "id": 88
-  },
-  {
-    "name": "Dani",
-    "password": "password7",
-    "profession": "slave",
-    "id": 7324
-  },
-  {
-    "name": "qweqwe",
-    "password": "qweqwe",
-    "profession": "qwewqe",
-    "id": 83873737
+    "id": 0.6258435198137786,
+    "type": "Expense",
+    "category": "Bills",
+    "amount": 16,
+    "date": "2021-10-09"
   }
 ]
