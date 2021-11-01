@@ -19,5 +19,12 @@
     "category": "Bills",
     "amount": 16,
     "date": "2021-10-09"
+  },
+  {
+    "id": 0.14976472668291518,
+    "type": "Income",
+    "category": "Grocery",
+    "amount": 275,
+    "date": "2021-10-30"
   }
 ]
