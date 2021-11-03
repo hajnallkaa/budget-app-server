@@ -85,7 +85,6 @@ app.delete('/deleteTransaction', (req, res) => {
         if (err) throw err;
         const sumResult = Array.from(result.reduce(
          (m, {type, value}) => m.set(type, (m.get(type) || 0) + value), new Map), ([type, value]) => ({type, value}));
-        console.log(sumResult)
         db.close();
         res.end(JSON.stringify(sumResult));
       });
@@ -102,12 +101,47 @@ app.get('/listIncomes', (req, res) => {
         if (err) throw err;
         const sumResult = Array.from(result.reduce(
          (m, {type, value}) => m.set(type, (m.get(type) || 0) + value), new Map), ([type, value]) => ({type, value}));
-        console.log(sumResult)
+        
         db.close();
         res.end(JSON.stringify(sumResult));
       });
     });
 });
+
+app.get('/listDays', function (req, res) {
+  MongoClient.connect(url, function(err, db) {
+     if (err) throw err;
+     var dbo = db.db("budget-app-db");
+     var query = { category: "Expense" };
+     dbo.collection("transactions").find(query).toArray(function(err, result) {
+       if (err) throw err;
+       
+       let days = []
+        for (let i=0; i< result.length;i++){
+            let dateList = result[i].date.split('-');
+            let day = Number(dateList[dateList.length-1]);
+            let quantity = result[i].value;
+            days.push({x: day, y: quantity});
+        }
+
+        days.sort((a, b) => parseFloat(a.x) - parseFloat(b.x));
+
+        var map = days.reduce(function (map, e) {
+          map[e.x] = +e.y + (map[e.x] || 0) 
+          return map
+        }, {})
+        
+        var result = Object.keys(map).map(function (k) {
+          return { x: k, y: map[k] }
+        })
+
+        console.log(result);
+      
+       db.close();
+       res.end(JSON.stringify(days));
+     });
+   });   
+})
 
 
 var server = app.listen(3001, function () {
