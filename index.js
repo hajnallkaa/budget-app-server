@@ -1,11 +1,11 @@
-var express = require('express');
-var app = express();
-var fs = require("fs");
+const express = require('express');
+const app = express();
+const fs = require("fs");
 const bodyParser = require("body-parser");
 const cors = require('cors');
-var mongodb = require('mongodb');
-var MongoClient = mongodb.MongoClient;
-var url = "mongodb://localhost:27017/";
+const mongodb = require('mongodb');
+const MongoClient = mongodb.MongoClient;
+const url = "mongodb://localhost:27017/";
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -17,10 +17,10 @@ app.use(cors({
 app.get('/listTransactions', function (req, res) {
    MongoClient.connect(url, function(err, db) {
       if (err) throw err;
-      var dbo = db.db("budget-app-db");
+      let dbo = db.db("budget-app-db");
       dbo.collection("transactions").find({}).toArray(function(err, result) {
         if (err) throw err;
-        console.log(result)
+        // console.log(result)
         db.close();
         res.end(JSON.stringify(result));
       });
@@ -31,7 +31,7 @@ app.get('/listTransactions', function (req, res) {
 app.post('/addTransaction', function (req, res) {
    MongoClient.connect(url, function(err, db) {
       if (err) throw err;
-      var dbo = db.db("budget-app-db");
+      let dbo = db.db("budget-app-db");
       dbo.collection("transactions").insertOne(req.body, function(err, res) {
         if (err) throw err;
         console.log("1 document inserted");
@@ -41,7 +41,7 @@ app.post('/addTransaction', function (req, res) {
 
     MongoClient.connect(url, function(err, db) {
       if (err) throw err;
-      var dbo = db.db("budget-app-db");
+      let dbo = db.db("budget-app-db");
       dbo.collection("transactions").find({}).toArray(function(err, result) {
         if (err) throw err;
         db.close();
@@ -55,9 +55,9 @@ app.delete('/deleteTransaction', (req, res) => {
 
    MongoClient.connect(url, function(err, db) {
       if (err) throw err;
-      var dbo = db.db("budget-app-db");
-      var myquery = {id: id};
-      dbo.collection("transactions").deleteOne(myquery, function(err, obj) {
+      let dbo = db.db("budget-app-db");
+      let query = {id: id};
+      dbo.collection("transactions").deleteOne(query, function(err, obj) {
         if (err) throw err;
         console.log("1 document deleted");
         db.close();
@@ -66,7 +66,7 @@ app.delete('/deleteTransaction', (req, res) => {
 
     MongoClient.connect(url, function(err, db) {
       if (err) throw err;
-      var dbo = db.db("budget-app-db");
+      let dbo = db.db("budget-app-db");
       dbo.collection("transactions").find({}).toArray(function(err, result) {
         if (err) throw err;
         db.close();
@@ -78,8 +78,8 @@ app.delete('/deleteTransaction', (req, res) => {
  app.get('/listExpenses', (req, res) => {
    MongoClient.connect(url, function(err, db) {
       if (err) throw err;
-      var dbo = db.db("budget-app-db");
-      var query = { category: "Expense"};
+      let dbo = db.db("budget-app-db");
+      let query = { category: "Expense"};
       const projection = { _id: 0, type: 1, value: 1 };
       dbo.collection("transactions").find(query).project(projection).toArray(function(err, result) {
         if (err) throw err;
@@ -94,8 +94,8 @@ app.delete('/deleteTransaction', (req, res) => {
 app.get('/listIncomes', (req, res) => {
    MongoClient.connect(url, function(err, db) {
       if (err) throw err;
-      var dbo = db.db("budget-app-db");
-      var query = { category: "Income" };
+      let dbo = db.db("budget-app-db");
+      let query = { category: "Income" };
       const projection = { _id: 0, type: 1, value: 1 };
       dbo.collection("transactions").find(query).project(projection).toArray(function(err, result) {
         if (err) throw err;
@@ -111,41 +111,89 @@ app.get('/listIncomes', (req, res) => {
 app.get('/listDays', function (req, res) {
   MongoClient.connect(url, function(err, db) {
      if (err) throw err;
-     var dbo = db.db("budget-app-db");
-     var query = { category: "Expense" };
+     let dbo = db.db("budget-app-db");
+     let query = { category: "Expense" };
      dbo.collection("transactions").find(query).toArray(function(err, result) {
        if (err) throw err;
+
+       let days = result.map(item => {
+        let dateList = item.date.split('-');
+        let day = Number(dateList[dateList.length-1]);
+        let quantity = item.value;
+        return {x: day, y: quantity};
+       })
        
-       let days = []
-        for (let i=0; i< result.length;i++){
-            let dateList = result[i].date.split('-');
-            let day = Number(dateList[dateList.length-1]);
-            let quantity = result[i].value;
-            days.push({x: day, y: quantity});
-        }
 
         days.sort((a, b) => parseFloat(a.x) - parseFloat(b.x));
 
-        var map = days.reduce(function (map, e) {
+        let map = days.reduce(function (map, e) {
           map[e.x] = +e.y + (map[e.x] || 0) 
           return map
         }, {})
         
-        var result = Object.keys(map).map(function (k) {
+        let dates = Object.keys(map).map(function (k) {
           return { x: k, y: map[k] }
         })
 
-        console.log(result);
       
        db.close();
-       res.end(JSON.stringify(days));
+       res.end(JSON.stringify(dates));
+     });
+   });   
+})
+
+app.get('/listDaysOfIncome', function (req, res) {
+  MongoClient.connect(url, function(err, db) {
+     if (err) throw err;
+     let dbo = db.db("budget-app-db");
+     let query = { category: "Income" };
+     dbo.collection("transactions").find(query).toArray(function(err, result) {
+       if (err) throw err;
+
+       let days = result.map(item => {
+        let dateList = item.date.split('-');
+        let day = Number(dateList[dateList.length-1]);
+        let quantity = item.value;
+        return {x: day, y: quantity};
+       })
+       
+
+        days.sort((a, b) => parseFloat(a.x) - parseFloat(b.x));
+
+        let map = days.reduce(function (map, e) {
+          map[e.x] = +e.y + (map[e.x] || 0) 
+          return map
+        }, {})
+        
+        let dates = Object.keys(map).map(function (k) {
+          return { x: k, y: map[k] }
+        })
+
+        
+      
+       db.close();
+       res.end(JSON.stringify(dates));
+     });
+   });   
+})
+
+app.get('/getSum', function (req, res) {
+  MongoClient.connect(url, function(err, db) {
+     if (err) throw err;
+     let dbo = db.db("budget-app-db");
+     dbo.collection("transactions").find({}).toArray(function(err, result) {
+       if (err) throw err;
+       let sum = 0;
+        result.map(i => { i.category === 'Income' ? sum += i.value : sum -= i.value})
+       db.close();
+       res.end(JSON.stringify(sum));
      });
    });   
 })
 
 
-var server = app.listen(3001, function () {
-   var host = server.address().address
-   var port = server.address().port
+const server = app.listen(3001, function () {
+   const host = server.address().address
+   const port = server.address().port
    console.log("Example app listening at http://%s:%s", host, port)
 })
